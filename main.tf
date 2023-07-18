@@ -14,8 +14,8 @@ terraform {
 
 # Configure the AWS Provider
 provider "aws" {
-  access_key = "AKIATCFNLBI6YXTXTKXS"
-  secret_key = "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"
+  access_key = "AKIAVV2QUHJDR6L4XF2U"
+  secret_key = "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"
 }
 
 # VPC
@@ -77,6 +77,7 @@ resource "aws_route_table_association" "a" {
 
 resource "aws_security_group" "sg_flannel" {
   name = "flannel-overlay-backend"
+  vpc_id      = aws_vpc.k8s_vpc.id
   tags = {
     Name = "Flannel Overlay backend"
   }
@@ -100,6 +101,7 @@ resource "aws_security_group" "sg_flannel" {
 
 resource "aws_security_group" "sg_common" {
   name = "common-ports"
+  vpc_id      = aws_vpc.k8s_vpc.id
   tags = { 
     Name = "common ports"
   }
@@ -138,6 +140,7 @@ resource "aws_security_group" "sg_common" {
 
 resource "aws_security_group" "sg_control_plane" {
   name = "kubeadm-control-plane security group"
+  vpc_id      = aws_vpc.k8s_vpc.id
   ingress {
     description = "API Server"
     protocol = "tcp"
@@ -186,7 +189,7 @@ resource "aws_security_group" "sg_control_plane" {
 
 resource "aws_security_group" "sg_worker_nodes" {
   name = "kubeadm-worker-node security group"
-
+  vpc_id      = aws_vpc.k8s_vpc.id
   ingress {
     description = "kubelet API"
     protocol = "tcp"
@@ -228,5 +231,65 @@ resource "aws_key_pair" "key_pair" {
     command = "echo '${tls_private_key.private_key.private_key_pem}' > ./private-key.pem"
   }
 }  
+
+# Instances
+
+# Control plane (Master)
+resource "aws_instance" "k8s_control_plane" {
+  subnet_id = aws_subnet.k8s_subnet.id
+  ami = var.ubuntu_ami
+  instance_type = "t2.medium"
+  key_name = aws_key_pair.key_pair.key_name
+  associate_public_ip_address = true
+  security_groups = [
+    aws_security_group.sg_common.id,
+    aws_security_group.sg_flannel.id,
+    aws_security_group.sg_control_plane.id,
+  ]
+  root_block_device {
+    volume_type = "gp2"
+    volume_size = 14
+  }
+
+  tags = {
+    Name = "k8s_control_plane"
+    Role = "Control plane node"
+  }
+
+  provisioner "local-exec" {
+    command = "echo 'master ${self.public_ip}' >> ./files/hosts"
+  }
+}
+
+resource "aws_instance" "worker_nodes" {
+  count = var.worker_nodes_count
+  subnet_id = aws_subnet.k8s_subnet.id
+  ami = var.ubuntu_ami
+  instance_type = "t2.small"
+  key_name = aws_key_pair.key_pair.key_name
+  associate_public_ip_address = true
+  security_groups = [
+    aws_security_group.sg_flannel.id,
+    aws_security_group.sg_common.id,
+    aws_security_group.sg_worker_nodes.id,
+  ]
+  root_block_device {
+    volume_type = "gp2"
+    volume_size = 8
+  }
+
+  tags = {
+    Name = "Kubeadm Worker ${count.index}"
+    Role = "Worker node"
+  }
+
+  provisioner "local-exec" {
+    command = "echo 'worker-${count.index} ${self.public_ip}' >> ./files/hosts"
+  }
+  
+}
+
+
+
 
 
