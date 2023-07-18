@@ -4,13 +4,18 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    tls = {
+      source = "hashicorp/tls"
+      version = "4.0.4"
+    }
+
   }
 }
 
 # Configure the AWS Provider
 provider "aws" {
-  access_key = "AKIA257FKG6BAQHNVKNK"
-  secret_key = "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"
+  access_key = "AKIATCFNLBI6YXTXTKXS"
+  secret_key = "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"
 }
 
 # VPC
@@ -67,7 +72,10 @@ resource "aws_route_table_association" "a" {
 
 # Security Groups
 
-resource "aws_security_group" "kubeadm_demo_sg_flannel" {
+# What is flannel?
+# https://www.velotio.com/engineering-blog/flannel-a-network-fabric-for-containers#:~:text=Flannel%3A%20a%20solution%20for%20networking%20for%20Kubernetes
+
+resource "aws_security_group" "sg_flannel" {
   name = "flannel-overlay-backend"
   tags = {
     Name = "Flannel Overlay backend"
@@ -90,7 +98,7 @@ resource "aws_security_group" "kubeadm_demo_sg_flannel" {
   }
 }
 
-resource "aws_security_group" "kubadm_demo_sg_common" {
+resource "aws_security_group" "sg_common" {
   name = "common-ports"
   tags = { 
     Name = "common ports"
@@ -128,7 +136,7 @@ resource "aws_security_group" "kubadm_demo_sg_common" {
   }
 }
 
-resource "aws_security_group" "kubeadm_demo_sg_control_plane" {
+resource "aws_security_group" "sg_control_plane" {
   name = "kubeadm-control-plane security group"
   ingress {
     description = "API Server"
@@ -176,7 +184,7 @@ resource "aws_security_group" "kubeadm_demo_sg_control_plane" {
 }
 
 
-resource "aws_security_group" "kubeadm_demo_sg_worker_nodes" {
+resource "aws_security_group" "sg_worker_nodes" {
   name = "kubeadm-worker-node security group"
 
   ingress {
@@ -200,5 +208,25 @@ resource "aws_security_group" "kubeadm_demo_sg_worker_nodes" {
   }
 }
 
+
+# Key pair
+resource "tls_private_key" "private_key" {
+  
+  algorithm = "RSA"
+  rsa_bits  = 4096
+
+  provisioner "local-exec" { # Create a "pubkey.pem" to your computer!!
+    command = "echo '${self.public_key_pem}' > ./pubkey.pem"
+  }
+}
+
+resource "aws_key_pair" "key_pair" {
+  key_name = var.keypair_name
+  public_key = tls_private_key.private_key.public_key_openssh
+
+  provisioner "local-exec" { # Create a "myKey.pem" to your computer!!
+    command = "echo '${tls_private_key.private_key.private_key_pem}' > ./private-key.pem"
+  }
+}  
 
 
