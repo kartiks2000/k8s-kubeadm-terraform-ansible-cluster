@@ -8,17 +8,13 @@ terraform {
       source = "hashicorp/tls"
       version = "4.0.4"
     }
-     ansible = {
-      version = "~> 1.1.0"
-      source  = "ansible/ansible"
-    }
   }
 }
 
 # Configure the AWS Provider
 provider "aws" {
-  access_key = "AKIA4QERH7QYSFY5TTV5"
-  secret_key = "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"
+  access_key = "AKIAZM6YJ6MZJQZ6M6MB"
+  secret_key = "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"
 }
 
 # VPC
@@ -263,7 +259,10 @@ resource "aws_instance" "k8s_control_plane" {
     command = "echo 'master ${self.public_ip}' >> ./hosts"
   }
   provisioner "local-exec" {
-    command = "echo '${self.public_ip}' >> ./control_node_inventory"
+    command = "echo '${self.public_ip}' >> ./inventories/control_node_inventory"
+  }
+  provisioner "local-exec" {
+    command = "echo '${self.public_ip}' >> ./inventories/k8s_nodes"
   }
 }
 
@@ -293,54 +292,9 @@ resource "aws_instance" "k8s_worker_nodes" {
     command = "echo 'worker-${count.index} ${self.public_ip}' >> ./hosts"
   }
   provisioner "local-exec" {
-    command = "echo '${self.public_ip}' >> ./worker_node_inventory"
+    command = "echo '${self.public_ip}' >> ./inventories/worker_node_inventory"
+  }
+  provisioner "local-exec" {
+    command = "echo '${self.public_ip}' >> ./inventories/k8s_nodes"
   }
 }
-
-
-
-# ================ ANSIBLE ================== #
-# Unlike in normal ansible where we specify all the hosts in inventory.yml, While using terraform, the ansible automatically creates a inventory file for us.
-# For every master or worker node, we have to declare a ansible_host provided by ansible provider. It automatically sets up our inventory.
-# Once we have declared our ansible_hosts and ran them, we can check out inventory using the command:
-# ansible-inventory -i inventory.yml --graph
-# But ansible must be installed on local machine and also an additional package must be installed (ansible-galaxy collection install cloud.terraform)
-# Read readme.md for more info
-
-# Ansible host for our control plane
-resource "ansible_host" "control_plane_host" {
-
-  depends_on = [ aws_instance.k8s_control_plane ]
-
-  name   = "control_plane"
-  groups = ["master"] # Any random name, I gave 'master' cuz of master node
-
-  variables = {
-    ansible_user = "ubuntu"
-    ansible_host = aws_instance.k8s_control_plane.public_ip
-    ansible_ssh_private_key_file = "./private-key.pem"
-    node_hostname = "master" # Needs to match the name in /files/hosts
-  }
-}
-
-# Ansible host for our worker plane
-resource "ansible_host" "worker_nodes_host" {
-
-  depends_on = [ aws_instance.k8s_worker_nodes ]
-
-  count = var.worker_nodes_count
-
-  name   = "worker-${count.index}"
-  groups = ["workers"] # Any random name, I gave 'workers' cuz it will have all the workers
-
-  variables = {
-    ansible_user = "ubuntu"
-    ansible_host = aws_instance.k8s_worker_nodes[count.index].public_ip
-    ansible_ssh_private_key_file = "./private-key.pem"
-    node_hostname = "worker-${count.index}" # Needs to match the name in /files/hosts
-  }
-}
-
-# So, now all our ansible hosts and inventoy file are setup.
-# Now we need to work on our Playbook (playbook.yml)
-
