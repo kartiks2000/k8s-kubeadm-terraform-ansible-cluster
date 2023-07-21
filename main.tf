@@ -13,8 +13,8 @@ terraform {
 
 # Configure the AWS Provider
 provider "aws" {
-  access_key = "AKIAXZOHVBYCBTL5YF6N"
-  secret_key = "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"
+  access_key = "AKIA3MIVPDQ3O7JGQTVS"
+  secret_key = "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"
 }
 
 # VPC
@@ -256,13 +256,10 @@ resource "aws_instance" "k8s_control_plane" {
   }
 
   provisioner "local-exec" {
-    command = "echo 'master ${self.public_ip}' >> ./hosts"
-  }
-  provisioner "local-exec" {
-    command = "echo 'master ansible_host=${self.public_ip}' >> ./inventories/control_node_inventory"
-  }
-  provisioner "local-exec" {
-    command = "echo '${self.public_ip}' >> ./inventories/k8s_nodes"
+    command = <<EOT
+      "echo '[master]' >> ./k8s_nodes"
+      "echo 'master ansible_host=${self.public_ip}' >> ./k8s_nodes"
+    EOT
   }
 }
 
@@ -289,12 +286,9 @@ resource "aws_instance" "k8s_worker_nodes" {
   }
 
   provisioner "local-exec" {
-    command = "echo 'worker-${count.index} ${self.public_ip}' >> ./hosts"
-  }
-  provisioner "local-exec" {
-    command = "echo '${self.public_ip}' >> ./inventories/worker_node_inventory"
-  }
-  provisioner "local-exec" {
-    command = "echo '${self.public_ip}' >> ./inventories/k8s_nodes"
+    command = <<EOT
+      "echo '[workers]' >> ./k8s_nodes"
+      "echo 'worker-${count.index} ansible_host=${self.public_ip}' >> ./k8s_nodes"
+    EOT
   }
 }
