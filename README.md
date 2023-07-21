@@ -18,3 +18,8 @@ sudo ansible-playbook -i inventory.yml playbook.yml
 Once you run the repo, use can use below commands for your help:
 1) to see the ansible inventory (ansible hosts)
 ansible-inventory -i inventory.yml --graph 
+
+
+chmod 400 private-key.pem
+
+
