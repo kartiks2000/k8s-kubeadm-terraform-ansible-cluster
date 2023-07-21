@@ -311,7 +311,7 @@ resource "ansible_host" "control_plane_host" {
   groups = ["master"] # Any random name, I gave 'master' cuz of master node
 
   variables = {
-    ansible_user = "host"
+    ansible_user = "ubuntu"
     ansible_host = aws_instance.k8s_control_plane.public_ip
     ansible_ssh_private_key_file = "./private-key.pem"
     node_hostname = "master" # Needs to match the name in /files/hosts
@@ -329,7 +329,7 @@ resource "ansible_host" "worker_nodes_host" {
   groups = ["workers"] # Any random name, I gave 'workers' cuz it will have all the workers
 
   variables = {
-    ansible_user = "host"
+    ansible_user = "ubuntu"
     ansible_host = aws_instance.k8s_worker_nodes[count.index].public_ip
     ansible_ssh_private_key_file = "./private-key.pem"
     node_hostname = "worker-${count.index}" # Needs to match the name in /files/hosts
