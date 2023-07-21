@@ -1,5 +1,6 @@
 - hosts: all
   become: yes
+  gather_facts: false
   tasks:
     - fail:
        msg: "OS should be Ubuntu 22.04, not {{ ansible_distribution }} {{ ansible_distribution_version }}"
