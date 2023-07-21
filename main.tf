@@ -17,8 +17,8 @@ terraform {
 
 # Configure the AWS Provider
 provider "aws" {
-  access_key = "AKIA5J5KFWJF233HRY4V"
-  secret_key = "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"
+  access_key = "AKIA4QERH7QYSFY5TTV5"
+  secret_key = "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"
 }
 
 # VPC
@@ -260,7 +260,10 @@ resource "aws_instance" "k8s_control_plane" {
   }
 
   provisioner "local-exec" {
-    command = "echo 'master ${self.public_ip}' >> ./files/hosts"
+    command = "echo 'master ${self.public_ip}' >> ./hosts"
+  }
+  provisioner "local-exec" {
+    command = "echo '${self.public_ip}' >> ./control_node_inventory"
   }
 }
 
@@ -287,9 +290,11 @@ resource "aws_instance" "k8s_worker_nodes" {
   }
 
   provisioner "local-exec" {
-    command = "echo 'worker-${count.index} ${self.public_ip}' >> ./files/hosts"
+    command = "echo 'worker-${count.index} ${self.public_ip}' >> ./hosts"
   }
-  
+  provisioner "local-exec" {
+    command = "echo '${self.public_ip}' >> ./worker_node_inventory"
+  }
 }
 
 
