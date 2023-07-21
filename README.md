@@ -1,5 +1,8 @@
 # k8s-kubeadm-terraform-ansible-cluster
-k8s-kubeadm-terraform-ansible-cluster
+
+Deploying K8s cluster on EC2
+
+*NOTE: Only compatible with Ubuntu 22.04*
 
 Pre-requisites to run the repo:
 1) Terraform installed on local machine

@@ -34,3 +34,5 @@ terraform.rc
 
 *.pem
 /files/*
+.terraform.lock.hcl
+k8s_nodes.yaml
