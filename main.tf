@@ -13,8 +13,8 @@ terraform {
 
 # Configure the AWS Provider
 provider "aws" {
-  access_key = "AKIA3MIVPDQ3O7JGQTVS"
-  secret_key = "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"
+  access_key = "AKIA6DWPLO522QOU5IUQ"
+  secret_key = "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"
 }
 
 # VPC
@@ -256,9 +256,9 @@ resource "aws_instance" "k8s_control_plane" {
   }
 
   provisioner "local-exec" {
-    command = <<EOT
-      "echo '[master]' >> ./k8s_nodes"
-      "echo 'master ansible_host=${self.public_ip}' >> ./k8s_nodes"
+    command = <<-EOT
+      echo '[master]' >> ./k8s_nodes.yaml
+      echo 'master-1 ansible_host=${self.public_ip}' >> k8s_nodes.yaml
     EOT
   }
 }
@@ -286,9 +286,9 @@ resource "aws_instance" "k8s_worker_nodes" {
   }
 
   provisioner "local-exec" {
-    command = <<EOT
-      "echo '[workers]' >> ./k8s_nodes"
-      "echo 'worker-${count.index} ansible_host=${self.public_ip}' >> ./k8s_nodes"
+    command = <<-EOT
+      echo '[workers]' >> ./k8s_nodes.yaml
+      echo 'worker-${count.index} ansible_host=${self.public_ip}' >> ./k8s_nodes.yaml
     EOT
   }
 }

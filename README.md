@@ -21,6 +21,6 @@ ansible-inventory -i inventory.yml --graph
 
 
 chmod 400 private-key.pem
-sudo ansible-playbook -u ubuntu -i ./inventories/k8s_nodes  --private-key private-key.pem playbooks/k8s_dependency_playbook.yml
-sudo ansible-playbook -u ubuntu -i ./inventories/control_node_inventory  --private-key private-key.pem playbooks/k8s_master_playbook.yml
-sudo ansible-playbook -u ubuntu -i ./inventories/worker_node_inventory  --private-key private-key.pem playbooks/k8s_worker_playbook.yml
+sudo ansible-playbook -u ubuntu -i ./k8s_nodes.yaml  --private-key private-key.pem playbooks/k8s_dependency_playbook.yml
+sudo ansible-playbook -u ubuntu -i ./k8s_nodes.yaml  --private-key private-key.pem playbooks/k8s_master_playbook.yml
+sudo ansible-playbook -u ubuntu -i ./k8s_nodes.yaml  --private-key private-key.pem playbooks/k8s_worker_playbook.yml
