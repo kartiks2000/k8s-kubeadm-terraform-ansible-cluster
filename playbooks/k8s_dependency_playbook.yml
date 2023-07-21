@@ -149,12 +149,3 @@
 
     - name: reboot and wait for reboot to complete
       reboot:
-
-# - hosts: master
-#   become: yes
-#   tasks:
-#     - name: install Kubectl
-#       apt:
-#         name: kubectl=1.26.*
-#         state: present
-#         force: yes # allow downgrades
