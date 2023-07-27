@@ -26,3 +26,5 @@ Pre-requisites to run the repo:
 
 
 Note: To change the number of workers, go to variables.tf file and change the dafault value of `worker_nodes_count` to number of workers you want
+
+Note: run the last commented task in k8s_master_playbook.yml if kubectl commands doent work using ansible.

@@ -63,3 +63,11 @@
       args:
         chdir: $HOME
         creates: pod_network_setup.log
+
+    # Run the below task, if Kubectl commands doesnt work using ansible
+    # - name: Necessary to do for the kubectl to work (run only once, else it will give error)
+    #   shell:
+    #     cmd: |
+    #       mkdir -p $HOME/.kube
+    #       sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    #       sudo chown $(id -u):$(id -g) $HOME/.kube/config

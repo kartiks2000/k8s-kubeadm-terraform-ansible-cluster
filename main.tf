@@ -13,8 +13,8 @@ terraform {
 
 # Configure the AWS Provider
 provider "aws" {
-  access_key = "AKIA6I5UQEESTRVGP6RP"
-  secret_key = "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"
+  access_key = "AKIAY4FPF6UJANAMSQCM"
+  secret_key = "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"
 }
 
 # VPC
